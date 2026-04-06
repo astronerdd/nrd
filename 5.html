@@ -48,114 +48,123 @@ ls ~/java-crud/ mysql-connector-java-8.0.21/
 4. Project setup (create folder and source file)
 nano CrudApp.java
 Paste the entire Java source code (single file) shown below into CrudApp.java. -->
+
+
+
+
 5. Full Java source (single file)
+
+
+
+
+
 import java.sql.*;
 import java.util.Scanner;
 public class CrudApp {
- private static final String URL =
+private static final String URL =
 
 "jdbc:mysql://localhost:3306/crudb?useSSL=false&allowPublicKeyRetrieval=true&serverTimez
 one=UTC";
- private static final String USER = "cruduser";
- private static final String PASS = "crudpass";
- public static void main(String[] args) {
- try (Scanner sc = new Scanner(System.in)) {
- // Explicitly load driver (important!)
- Class.forName("com.mysql.cj.jdbc.Driver");
- try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
- System.out.println(" Connected to database.");
- initSchema(conn);
- while (true) {
- printMenu();
- int choice = Integer.parseInt(sc.nextLine().trim());
- switch (choice) {
- case 1 -> insertUser(conn, sc);
- case 2 -> readUsers(conn);
- case 3 -> updateUser(conn, sc);
- case 4 -> deleteUser(conn, sc);
- case 5 -> {
- System.out.println("Exiting...");
- return;
- }
- default -> System.out.println("Invalid choice, try again.");
- }
- }
- }
- } catch (Exception e) {
- System.err.println(" Fatal error: " + e.getMessage());
- e.printStackTrace();
- }
- }
- private static void initSchema(Connection conn) throws SQLException {
- String ddl = "CREATE TABLE IF NOT EXISTS users (" +
- "id INT PRIMARY KEY AUTO_INCREMENT, " +
- "name VARCHAR(100), " +
- "email VARCHAR(100), " +
- "age INT)";
- try (Statement st = conn.createStatement()) {
- st.executeUpdate(ddl);
- }
- }
- private static void printMenu() {
- System.out.println("\n--- CRUD Menu ---");
- System.out.println("1. Insert User");
- System.out.println("2. Read Users");
- System.out.println("3. Update User Email");
- System.out.println("4. Delete User");
- System.out.println("5. Exit");
- System.out.print("Enter choice: ");
- }
- private static void insertUser(Connection conn, Scanner sc) throws SQLException {
- System.out.print("Name: ");
- String name = sc.nextLine();
- System.out.print("Email: ");
- String email = sc.nextLine();
- System.out.print("Age: ");
- int age = Integer.parseInt(sc.nextLine());
- String sql = "INSERT INTO users (name, email, age) VALUES (?, ?, ?)";
- try (PreparedStatement ps = conn.prepareStatement(sql)) {
- ps.setString(1, name);
- ps.setString(2, email);
- ps.setInt(3, age);
- ps.executeUpdate();
- System.out.println(" User inserted.");
- }
- }
- private static void readUsers(Connection conn) throws SQLException {
- String sql = "SELECT * FROM users";
- try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
- while (rs.next()) {
- System.out.printf("%d | %s | %s | %d%n",
- rs.getInt("id"),
- rs.getString("name"),
- rs.getString("email"),
- rs.getInt("age"));
- }
- }
- }
- private static void updateUser(Connection conn, Scanner sc) throws SQLException {
- System.out.print("Enter ID: ");
- int id = Integer.parseInt(sc.nextLine());
- System.out.print("New Email: ");
- String email = sc.nextLine();
- String sql = "UPDATE users SET email = ? WHERE id = ?";
- try (PreparedStatement ps = conn.prepareStatement(sql)) {
- ps.setString(1, email);
- ps.setInt(2, id);
- ps.executeUpdate();
- System.out.println(" User updated.");
- }
- }
- private static void deleteUser(Connection conn, Scanner sc) throws SQLException {
- System.out.print("Enter ID: ");
- int id = Integer.parseInt(sc.nextLine());
- String sql = "DELETE FROM users WHERE id = ?";
- try (PreparedStatement ps = conn.prepareStatement(sql)) {
- ps.setInt(1, id);
- ps.executeUpdate();
- System.out.println(" User deleted.");
- }
- }
+private static final String USER = "cruduser";
+private static final String PASS = "crudpass";
+public static void main(String[] args) {
+try (Scanner sc = new Scanner(System.in)) {
+// Explicitly load driver (important!)
+Class.forName("com.mysql.cj.jdbc.Driver");
+try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+System.out.println(" Connected to database.");
+initSchema(conn);
+while (true) {
+printMenu();
+int choice = Integer.parseInt(sc.nextLine().trim());
+switch (choice) {
+case 1 -> insertUser(conn, sc);
+case 2 -> readUsers(conn);
+case 3 -> updateUser(conn, sc);
+case 4 -> deleteUser(conn, sc);
+case 5 -> {
+System.out.println("Exiting...");
+return;
+}
+default -> System.out.println("Invalid choice, try again.");
+}
+}
+}
+} catch (Exception e) {
+System.err.println(" Fatal error: " + e.getMessage());
+e.printStackTrace();
+}
+}
+private static void initSchema(Connection conn) throws SQLException {
+String ddl = "CREATE TABLE IF NOT EXISTS users (" +
+"id INT PRIMARY KEY AUTO_INCREMENT, " +
+"name VARCHAR(100), " +
+"email VARCHAR(100), " +
+"age INT)";
+try (Statement st = conn.createStatement()) {
+st.executeUpdate(ddl);
+}
+}
+private static void printMenu() {
+System.out.println("\n--- CRUD Menu ---");
+System.out.println("1. Insert User");
+System.out.println("2. Read Users");
+System.out.println("3. Update User Email");
+System.out.println("4. Delete User");
+System.out.println("5. Exit");
+System.out.print("Enter choice: ");
+}
+private static void insertUser(Connection conn, Scanner sc) throws SQLException {
+System.out.print("Name: ");
+String name = sc.nextLine();
+System.out.print("Email: ");
+String email = sc.nextLine();
+System.out.print("Age: ");
+int age = Integer.parseInt(sc.nextLine());
+String sql = "INSERT INTO users (name, email, age) VALUES (?, ?, ?)";
+try (PreparedStatement ps = conn.prepareStatement(sql)) {
+ps.setString(1, name);
+ps.setString(2, email);
+ps.setInt(3, age);
+ps.executeUpdate();
+System.out.println(" User inserted.");
+}
+}
+private static void readUsers(Connection conn) throws SQLException {
+String sql = "SELECT * FROM users";
+try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+while (rs.next()) {
+System.out.printf("%d | %s | %s | %d%n",
+rs.getInt("id"),
+rs.getString("name"),
+rs.getString("email"),
+rs.getInt("age"));
+}
+}
+}
+private static void updateUser(Connection conn, Scanner sc) throws SQLException {
+System.out.print("Enter ID: ");
+int id = Integer.parseInt(sc.nextLine());
+System.out.print("New Email: ");
+String email = sc.nextLine();
+String sql = "UPDATE users SET email = ? WHERE id = ?";
+try (PreparedStatement ps = conn.prepareStatement(sql)) {
+ps.setString(1, email);
+ps.setInt(2, id);
+ps.executeUpdate();
+System.out.println(" User updated.");
+}
+}
+private static void deleteUser(Connection conn, Scanner sc) throws SQLException {
+System.out.print("Enter ID: ");
+int id = Integer.parseInt(sc.nextLine());
+String sql = "DELETE FROM users WHERE id = ?";
+try (PreparedStatement ps = conn.prepareStatement(sql)) {
+ps.setInt(1, id);
+ps.executeUpdate();
+System.out.println(" User deleted.");
+}
+}
 }
 Exiting nano after pasting the code
 1. After you paste all the code into nano CrudApp.java, press:
