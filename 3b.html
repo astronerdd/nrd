@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ================= META INFORMATION ================= -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shopping Cart App - Experiment 2 (Bootstrap)</title>
+<!-- ================= BOOTSTRAP CSS ================= -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
+rel="stylesheet">
+<!-- ================= CUSTOM CSS ================= -->
+<style>
+/* Hide all pages by default */
+.page{
+ display:none;
+}
+/* Show active page */
+.page.active{
+ display:block;
+}
+/* Page background */
+body{
+ background:#f4f6f8;
+}
+</style>
+</head>
+<body>
+<!-- ================= NAVBAR (BOOTSTRAP) ================= -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+ <div class="container">
+ <span class="navbar-brand">Shopping Cart</span>
+ <!-- Navigation Buttons -->
+ <div class="ms-auto">
+ <button class="btn btn-light btn-sm me-1" onclick="showPage('home')">Home</button>
+ <button class="btn btn-light btn-sm me-1" onclick="showPage('register')">Register</button>
+ <button class="btn btn-light btn-sm me-1" onclick="showPage('login')">Login</button>
+ <button class="btn btn-light btn-sm me-1" onclick="showPage('catalog')">Catalog</button>
+ <button class="btn btn-light btn-sm" onclick="showPage('cart')">Cart</button>
+ </div>
+ </div>
+</nav>
+<!-- ================= HOME PAGE ================= -->
+<div class="page active container text-center mt-5" id="home">
+ <h1>Welcome to Shopping Cart</h1>
+ <p class="lead">Responsive Web Application using Bootstrap</p>
+</div>
+<!-- ================= REGISTRATION PAGE ================= -->
+<div class="page container mt-5" id="register">
+ <div class="row justify-content-center">
+ <div class="col-md-4">
+ <!-- Registration Card -->
+ <div class="card p-4 shadow">
+ <h3 class="text-center">Register</h3>
+ <!-- Input Fields -->
+ <input id="rUser" class="form-control my-2" placeholder="Username">
+ <input id="rPass" type="password" class="form-control my-2" placeholder="Password">
+ <!-- Register Button -->
+ <button class="btn btn-primary w-100" onclick="register()">Register</button>
+ </div>
+ </div>
+ </div>
+</div>
+<!-- ================= LOGIN PAGE ================= -->
+<div class="page container mt-5" id="login">
+ <div class="row justify-content-center">
+ <div class="col-md-4">
+ <!-- Login Card -->
+ <div class="card p-4 shadow">
+ <h3 class="text-center">Login</h3>
+ <!-- Input Fields -->
+ <input id="lUser" class="form-control my-2" placeholder="Username">
+ <input id="lPass" type="password" class="form-control my-2" placeholder="Password">
+ <!-- Login Button -->
+ <button class="btn btn-success w-100" onclick="login()">Login</button>
+ </div>
+ </div>
+ </div>
+</div>
+<!-- ================= PRODUCT CATALOG PAGE ================= -->
+<div class="page container mt-5" id="catalog">
+ <!-- Product Grid -->
+ <div class="row g-4">
+ <!-- Product 1 -->
+ <div class="col-sm-6 col-md-4">
+ <div class="card h-100 shadow">
+ <!-- Product Image -->
+ <img src="https://images.pexels.com/photos/264636/pexels-photo-264636.jpeg"
+ class="card-img-top" alt="Product 1">
+ <!-- Product Details -->
+ <div class="card-body text-center">
+ <h5 class="card-title">Product 1</h5>
+ <p class="card-text">₹500</p>
+ <!-- Add to Cart Button -->
+ <button class="btn btn-primary"
+ onclick="addToCart('Product 1',500)">
+ Add to Cart
+ </button>
+ </div>
+ </div>
+ </div>
+ <!-- Product 2 -->
+ <div class="col-sm-6 col-md-4">
+ <div class="card h-100 shadow">
+ <!-- Product Image -->
+ <img src="https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg"
+ class="card-img-top" alt="Product 2">
+ <!-- Product Details -->
+ <div class="card-body text-center">
+ <h5 class="card-title">Product 2</h5>
+ <p class="card-text">₹700</p>
+ <!-- Add to Cart Button -->
+ <button class="btn btn-primary"
+ onclick="addToCart('Product 2',700)">
+ Add to Cart
+ </button>
+ </div>
+ </div>
+ </div>
+ </div>
+</div>
+<!-- ================= CART PAGE ================= -->
+<div class="page container mt-5" id="cart">
+ <div class="row justify-content-center">
+ <div class="col-md-6">
+ <!-- Cart Card -->
+ <div class="card p-4 shadow">
+ <h3>Your Cart</h3>
+ <!-- Cart Items Display -->
+ <div id="cartItems"></div>
+ <hr>
+ <!-- Total Amount -->
+ <h5>Total: ₹<span id="total">0</span></h5>
+ </div>
+ </div>
+ </div>
+</div>
+<!-- ================= JAVASCRIPT SECTION ================= -->
+<script>
+/* ---------- GLOBAL VARIABLES ---------- */
+let cart = []; // Stores cart items
+let user = ""; // Registered username
+let pass = ""; // Registered password
+/* ---------- PAGE NAVIGATION FUNCTION ---------- */
+function showPage(id){
+ document.querySelectorAll('.page').forEach(p =>
+ p.classList.remove('active')
+ );
+ document.getElementById(id).classList.add('active');
+}
+/* ---------- REGISTRATION VALIDATION ---------- */
+function register(){
+ let u = rUser.value.trim();
+ let p = rPass.value.trim();
+ if(u === "" || p === ""){
+ alert("All fields are mandatory");
+ return;
+ }
+ if(p.length < 6){
+ alert("Password must contain at least 6 characters");
+ return;
+ }
+ user = u;
+ pass = p;
+ alert("Registration Successful");
+ showPage('login');
+}
+/* ---------- LOGIN VALIDATION ---------- */
+function login(){
+ let u = lUser.value.trim();
+ let p = lPass.value.trim();
+ if(u !== user || p !== pass){
+ alert("Invalid Username or Password");
+ return;
+ }
+ alert("Login Successful");
+ showPage('catalog');
+}
+/* ---------- ADD ITEM TO CART ---------- */
+function addToCart(name, price){
+ cart.push({name, price});
+ updateCart();
+}
+/* ---------- REMOVE ITEM FROM CART ---------- */
+function removeFromCart(index){
+ cart.splice(index, 1);
+ updateCart();
+}
+/* ---------- UPDATE CART DISPLAY ---------- */
+function updateCart(){
+ let items = document.getElementById("cartItems");
+ items.innerHTML = "";
+ let totalAmount = 0;
+ cart.forEach((item, i) => {
+ items.innerHTML += `
+ <div class="d-flex justify-content-between align-items-center mb-2">
+ <span>${item.name}</span>
+ <span>₹${item.price}</span>
+ <button class="btn btn-sm btn-danger"
+ onclick="removeFromCart(${i})">
+ Remove
+ </button>
+ </div>
+ `;
+ totalAmount += item.price;
+ });
+ document.getElementById("total").innerText = totalAmount;
+}
+</script>
+<!-- ================= BOOTSTRAP JS ================= -->
+<script
+src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
