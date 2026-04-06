@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- ================= META INFORMATION ================= -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shopping Cart App - Experiment 1</title>
+<!-- ================= CSS3 STYLES ================= -->
+<style>
+/* ----- Global Reset ----- */
+*{
+ margin:0;
+ padding:0;
+ box-sizing:border-box;
+ font-family:Arial;
+}
+/* ----- Body Layout ----- */
+body{
+ min-height:100vh;
+ display:flex;
+ flex-direction:column;
+}
+/* ================= HEADER SECTION (Flexbox) ================= */
+header{
+ background:#2c3e50;
+ color:white;
+ padding:15px;
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+nav a{
+ color:white;
+ text-decoration:none;
+ margin:0 10px;
+ cursor:pointer;
+}
+/* ================= PAGE SECTIONS ================= */
+.page{
+ flex:1;
+ display:none;
+ justify-content:center;
+ align-items:center;
+ padding:20px;
+ background-size:cover;
+ background-position:center;
+ position:relative;
+}
+.page.active{
+ display:flex;
+}
+/* ================= BACKGROUND IMAGES ================= */
+#home{background-image:url("https://images.pexels.com/photos/5632402/pexels-photo5632402.jpeg");}
+#register{background-image:url("https://images.pexels.com/photos/4049963/pexels-photo4049963.jpeg");}
+#login{background-image:url("https://images.pexels.com/photos/3184465/pexels-photo3184465.jpeg");}
+#catalog{background-image:url("https://images.pexels.com/photos/135620/pexels-photo135620.jpeg");}
+#cart{background-image:url("https://images.pexels.com/photos/2760241/pexels-photo2760241.jpeg");}
+/* ================= DARK OVERLAY ================= */
+.page::before{
+ content:"";
+ position:absolute;
+ inset:0;
+ background:rgba(0,0,0,0.5);
+ pointer-events:none;
+}
+.page > *{
+ position:relative;
+ z-index:2;
+}
+/* ================= FORM STYLING ================= */
+.form-box{
+ background:rgba(255,255,255,0.9);
+ padding:20px;
+ width:300px;
+ border-radius:8px;
+}
+.form-box input{
+ width:100%;
+ padding:8px;
+ margin:8px 0;
+}
+button{
+ width:100%;
+ padding:8px;
+ background:#3498db;
+ color:white;
+ border:none;
+}
+/* ================= PRODUCT CATALOG (Grid) ================= */
+.catalog{
+ display:grid;
+ grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+ gap:20px;
+ max-width:900px;
+ width:100%;
+}
+.product{
+ background:white;
+ padding:15px;
+ text-align:center;
+ border-radius:8px;
+}
+.product img{
+ width:100%;
+ height:140px;
+ object-fit:cover;
+}
+/* ================= CART STYLING ================= */
+.cart-box{
+ background:white;
+ padding:20px;
+ width:400px;
+ border-radius:8px;
+}
+.cart-item{
+ display:flex;
+ justify-content:space-between;
+ margin-bottom:10px;
+}
+.cart-item button{
+ width:auto;
+ background:#e74c3c;
+}
+</style>
+</head>
+<body>
+<!-- ================= HEADER ================= -->
+<header>
+ <h2>Shopping Cart</h2>
+ <nav>
+ <a onclick="showPage('home')">Home</a>
+ <a onclick="showPage('register')">Register</a>
+ <a onclick="showPage('login')">Login</a>
+ <a onclick="showPage('catalog')">Catalog</a>
+ <a onclick="showPage('cart')">Cart</a>
+ </nav>
+</header>
+<!-- ================= HOME PAGE ================= -->
+<div class="page active" id="home">
+ <h1 style="color:white">Welcome to Shopping Cart</h1>
+</div>
+<!-- ================= REGISTRATION PAGE ================= -->
+<div class="page" id="register">
+ <div class="form-box">
+ <h2>Register</h2>
+ <input id="regUser" placeholder="Username">
+ <input id="regPass" type="password" placeholder="Password">
+ <button onclick="register()">Register</button>
+ </div>
+</div>
+<!-- ================= LOGIN PAGE ================= -->
+<div class="page" id="login">
+ <div class="form-box">
+ <h2>Login</h2>
+ <input id="loginUser" placeholder="Username">
+ <input id="loginPass" type="password" placeholder="Password">
+ <button onclick="login()">Login</button>
+ </div>
+</div>
+<!-- ================= PRODUCT CATALOG ================= -->
+<div class="page" id="catalog">
+ <div class="catalog">
+ <div class="product">
+ <img src="https://images.pexels.com/photos/264636/pexels-photo-264636.jpeg">
+ <h3>Product 1</h3>
+ <p>₹500</p>
+ <button onclick="addToCart('Product 1',500)">Add</button>
+ </div>
+ <div class="product">
+ <img src="https://images.pexels.com/photos/404280/pexels-photo-404280.jpeg">
+ <h3>Product 2</h3>
+ <p>₹700</p>
+ <button onclick="addToCart('Product 2',700)">Add</button>
+ </div>
+ </div>
+</div>
+<!-- ================= CART PAGE ================= -->
+<div class="page" id="cart">
+ <div class="cart-box">
+ <h2>Your Cart</h2>
+ <div id="cartItems"></div>
+ <p>Total: ₹<span id="total">0</span></p>
+ </div>
+</div>
+<!-- ================= JAVASCRIPT SECTION ================= -->
+<script>
+/* ----- Global Variables ----- */
+let cart=[];
+let savedUser="", savedPass="";
+/* ----- Page Navigation Function ----- */
+function showPage(id){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+/* ----- Registration Validation ----- */
+function register(){
+ let u=regUser.value.trim();
+ let p=regPass.value.trim();
+ if(u=="" || p==""){
+ alert("All fields are required");
+ return;
+ }
+ if(p.length<6){
+ alert("Password must be at least 6 characters");
+ return;
+ }
+ savedUser=u;
+ savedPass=p;
+ alert("Registered Successfully");
+ showPage('login');
+}
+/* ----- Login Validation ----- */
+function login(){
+ if(loginUser.value!==savedUser || loginPass.value!==savedPass){
+ alert("Invalid username or password");
+ return;
+ }
+ alert("Login Successful");
+ showPage('catalog');
+}
+/* ----- Cart Functions ----- */
+function addToCart(name,price){
+ cart.push({name,price});
+ updateCart();
+}
+function removeFromCart(i){
+ cart.splice(i,1);
+ updateCart();
+}
+function updateCart(){
+ cartItems.innerHTML="";
+ let totalAmount=0;
+ cart.forEach((item,i)=>{
+ cartItems.innerHTML+=`
+ <div class="cart-item">
+ <span>${item.name}</span>
+ <span>₹${item.price}</span>
+ <button onclick="removeFromCart(${i})">Remove</button>
+ </div>`;
+ totalAmount+=item.price;
+ });
+ total.innerText=totalAmount;
+}
+</script>
+</body>
+</html>

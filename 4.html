@@ -1,0 +1,126 @@
+<!-- EXPERIMENT- 4
+AIM: Explore the features of ES6 like arrow functions, callbacks, promises, async/ await.
+Implement an application for reading the weather information from openweathermap.org and
+display the information in the form of a graph on the web page.
+DESCRIPTION: To implement an application for reading weather information from
+OpenWeatherMap.org and displaying the information in the form of a graph, we can use
+JavaScript with ES6 features like arrow functions, callbacks, promises, and async/await. For
+simplicity, we'll use the axios library to make HTTP requests and Chart.js for creating the graph.
+The inclusion of these libraries is crucial for your project.
+Project Structure:
+1. index.html - Main HTML file.
+2. script.js - JavaScript file for handling weather data and graph creation.
+3. styles.css - CSS file for styling.
+4. node_modules/ - Folder for library dependencies.
+OPENWEATHERMAP.COM
+1. Open the openweathermap.com Create the account and login
+2. Check the output image 1 to 4 to know where to find the API and create and paste in the
+code
+3. After generating the code wait for some time to activate the API key maybe like 5 to 10
+minutes
+4. What to check Your API is activated or not place this URL at the last YOU-OWN to your
+API key generated in the URL if the API activate it shows the weather data if not it
+shows API is Invalid
+https://api.openweathermap.org/data/2.5/forecast?q=Hyderabad&units=metric&appid=Y
+OUR-KEY
+———————————————————————————————- -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <title>Weather App - ES6 Features</title>
+ <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <style>
+ body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+ input, button { padding: 8px; margin: 5px; }
+ canvas { max-width: 700px; margin: 20px auto; display: block; }
+ </style>
+</head>
+<body>
+ <h1>Weather Forecast (OpenWeatherMap)</h1>
+ <input type="text" id="city" placeholder="Enter City Name" />
+ <button id="getWeather">Get Weather</button>
+ <canvas id="weatherChart"></canvas>
+ <script>
+ let weatherChart; // chart instance
+ // Arrow function for logging
+ const logMessage = msg => console.log(msg);
+ // Callback example: fetch weather data
+ function fetchData(city, callback) {
+ const apiKey = "YOUR_OWN_APIKEY"; // 🔑 replace with your API key
+ const url =
+`https://api.openweathermap.org/data/2.5/forecast?q=${city}&units=metric&appid=${apiKey}`;
+ fetch(url)
+ .then(res => res.json())
+ .then(data => callback(null, data))
+ .catch(err => callback(err, null));
+ }
+ // Promise wrapper
+ const fetchWeatherPromise = city => {
+ return new Promise((resolve, reject) => {
+ fetchData(city, (err, data) => {
+ if (err) reject(err);
+ else if (data.cod !== "200") reject(data.message); // city not found
+ else resolve(data);
+ });
+ });
+ };
+ // Async/Await usage
+ async function getWeather(city) {
+ try {
+ const data = await fetchWeatherPromise(city);
+ displayWeatherChart(data);
+ } catch (error) {
+ if (weatherChart) weatherChart.destroy();
+ alert("Error: " + error);
+ }
+ }
+ // Chart.js to display weather
+ const displayWeatherChart = data => {
+ const labels = data.list.slice(0, 7).map(item => item.dt_txt);
+ const temps = data.list.slice(0, 7).map(item => item.main.temp);
+ const ctx = document.getElementById("weatherChart").getContext("2d");
+ if (weatherChart) weatherChart.destroy(); // clear old chart
+ weatherChart = new Chart(ctx, {
+ type: "line",
+ data: {
+ labels: labels,
+ datasets: [{
+ label: `Temperature (°C) in ${data.city.name}`,
+ data: temps,
+ borderColor: "blue",
+ backgroundColor: "lightblue",
+ fill: true,
+ tension: 0.3
+ }]
+ },
+ options: { responsive: true }
+ });
+ };
+ // Event listener
+ document.getElementById("getWeather").addEventListener("click", () => {
+ const city = document.getElementById("city").value.trim();
+ if (city) getWeather(city);
+ else alert("Please enter a city name");
+ });
+ </script>
+</body>
+</html>
+<!-- Explanation:
+1. HTML Structure: We have a simple HTML structure with a container for the
+graph canvas.
+2. CSS Styling: Basic styling to make the application look presentable.
+3. JavaScript (script.js):
+• The fetchData function uses axios to make an asynchronous HTTP request to
+OpenWeatherMap API.
+• The retrieved weather data is used to update the graph using the
+updateGraph function.
+• The graph is created using the Chart.js library.
+4. API Key: Replace 'YOUR_OPENWEATHERMAP_API_KEY' with your
+OpenWeatherMap API key and 'YOUR_CITY_NAME' with the desired city.
+Output:
+When you open index.html in a web browser, the application fetches the current weather
+information for the specified city from OpenWeatherMap API and displays the temperature on a
+bar graph. Please note that you need to replace 'YOUR_OPENWEATHERMAP_API_KEY' with
+your actual API key. Additionally, the responsiveness and appearance can be further enhanced
+based on your design preferences -->

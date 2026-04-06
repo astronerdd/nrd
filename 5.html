@@ -1,0 +1,179 @@
+<!-- 5. Develop a java standalone application that connects with the database
+(Oracle / MySQL) and perform the CRUD operation on the database tables.
+Objective: Build a simple Java standalone (console) application that connects to a MySQL
+database on Ubuntu and performs CRUD (Create, Read, Update, Delete) operations on a users
+table. This manual provides step-by-step commands, the full Java source code (single file),
+compile/run instructions, troubleshooting tips, and exercises.
+1. Install Java (OpenJDK 17)
+Open a terminal and run:
+sudo apt update
+sudo apt install -y openjdk-17-jdk
+java -version
+javac -version
+You should see openjdk version "17.x" and a javac version.
+2. Install MySQL Server
+sudo apt install -y mysql-server
+sudo systemctl enable --now mysql
+# Optional: secure MySQL by setting root password & removing test users
+sudo mysql_secure_installation
+Log in to MySQL as root and create a database and a limited user for the app:
+sudo mysql -u root -p
+# (enter root password if asked) jntuhces
+CREATE DATABASE crudb;
+CREATE USER 'cruduser'@'localhost' IDENTIFIED BY 'crudpass'; if this not working use
+below command
+CREATE USER 'cruduser'@'localhost' IDENTIFIED WITH mysql_native_password BY
+'crudpass';
+GRANT ALL PRIVILEGES ON crudb.* TO 'cruduser'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+Note to students: Do not use root in production. We create cruduser with limited scope for
+security.
+3. Install JDBC driver for MySQL
+1. Download official MySQL Connector/J
+Search Mysql connector/j in google and go to the link MySQL :: Download Connector/J
+in the google search
+Open the link and select Archives
+select the version 8.0.21 and below and select Operating System as Platform Independent
+Right click on to the Download button and copy the link
+Extract it in your project folder:
+mkdir -p ~/java-crud
+cd ~/java-crud
+wget https://downloads.mysql.com/archives/get/p/3/file/mysql-connector-java-8.0.21.zip
+unzip mysql-connector-java-8.0.21.zip -d ~/java-crud
+~/java-crud/ mysql-connector-java-8.0.21/
+Locate the .jar file
+ls ~/java-crud/ mysql-connector-java-8.0.21/
+~/java-crud/ mysql-connector-java-8.0.21/ mysql-connector-java-8.0.21.jar
+4. Project setup (create folder and source file)
+nano CrudApp.java
+Paste the entire Java source code (single file) shown below into CrudApp.java. -->
+5. Full Java source (single file)
+import java.sql.*;
+import java.util.Scanner;
+public class CrudApp {
+ private static final String URL =
+
+"jdbc:mysql://localhost:3306/crudb?useSSL=false&allowPublicKeyRetrieval=true&serverTimez
+one=UTC";
+ private static final String USER = "cruduser";
+ private static final String PASS = "crudpass";
+ public static void main(String[] args) {
+ try (Scanner sc = new Scanner(System.in)) {
+ // Explicitly load driver (important!)
+ Class.forName("com.mysql.cj.jdbc.Driver");
+ try (Connection conn = DriverManager.getConnection(URL, USER, PASS)) {
+ System.out.println(" Connected to database.");
+ initSchema(conn);
+ while (true) {
+ printMenu();
+ int choice = Integer.parseInt(sc.nextLine().trim());
+ switch (choice) {
+ case 1 -> insertUser(conn, sc);
+ case 2 -> readUsers(conn);
+ case 3 -> updateUser(conn, sc);
+ case 4 -> deleteUser(conn, sc);
+ case 5 -> {
+ System.out.println("Exiting...");
+ return;
+ }
+ default -> System.out.println("Invalid choice, try again.");
+ }
+ }
+ }
+ } catch (Exception e) {
+ System.err.println(" Fatal error: " + e.getMessage());
+ e.printStackTrace();
+ }
+ }
+ private static void initSchema(Connection conn) throws SQLException {
+ String ddl = "CREATE TABLE IF NOT EXISTS users (" +
+ "id INT PRIMARY KEY AUTO_INCREMENT, " +
+ "name VARCHAR(100), " +
+ "email VARCHAR(100), " +
+ "age INT)";
+ try (Statement st = conn.createStatement()) {
+ st.executeUpdate(ddl);
+ }
+ }
+ private static void printMenu() {
+ System.out.println("\n--- CRUD Menu ---");
+ System.out.println("1. Insert User");
+ System.out.println("2. Read Users");
+ System.out.println("3. Update User Email");
+ System.out.println("4. Delete User");
+ System.out.println("5. Exit");
+ System.out.print("Enter choice: ");
+ }
+ private static void insertUser(Connection conn, Scanner sc) throws SQLException {
+ System.out.print("Name: ");
+ String name = sc.nextLine();
+ System.out.print("Email: ");
+ String email = sc.nextLine();
+ System.out.print("Age: ");
+ int age = Integer.parseInt(sc.nextLine());
+ String sql = "INSERT INTO users (name, email, age) VALUES (?, ?, ?)";
+ try (PreparedStatement ps = conn.prepareStatement(sql)) {
+ ps.setString(1, name);
+ ps.setString(2, email);
+ ps.setInt(3, age);
+ ps.executeUpdate();
+ System.out.println(" User inserted.");
+ }
+ }
+ private static void readUsers(Connection conn) throws SQLException {
+ String sql = "SELECT * FROM users";
+ try (Statement st = conn.createStatement(); ResultSet rs = st.executeQuery(sql)) {
+ while (rs.next()) {
+ System.out.printf("%d | %s | %s | %d%n",
+ rs.getInt("id"),
+ rs.getString("name"),
+ rs.getString("email"),
+ rs.getInt("age"));
+ }
+ }
+ }
+ private static void updateUser(Connection conn, Scanner sc) throws SQLException {
+ System.out.print("Enter ID: ");
+ int id = Integer.parseInt(sc.nextLine());
+ System.out.print("New Email: ");
+ String email = sc.nextLine();
+ String sql = "UPDATE users SET email = ? WHERE id = ?";
+ try (PreparedStatement ps = conn.prepareStatement(sql)) {
+ ps.setString(1, email);
+ ps.setInt(2, id);
+ ps.executeUpdate();
+ System.out.println(" User updated.");
+ }
+ }
+ private static void deleteUser(Connection conn, Scanner sc) throws SQLException {
+ System.out.print("Enter ID: ");
+ int id = Integer.parseInt(sc.nextLine());
+ String sql = "DELETE FROM users WHERE id = ?";
+ try (PreparedStatement ps = conn.prepareStatement(sql)) {
+ ps.setInt(1, id);
+ ps.executeUpdate();
+ System.out.println(" User deleted.");
+ }
+ }
+}
+Exiting nano after pasting the code
+1. After you paste all the code into nano CrudApp.java, press:
+Ctrl + O
+• This writes (saves) the file.
+• Nano will ask for a filename at the bottom (File Name to Write: CrudApp.java), just
+press Enter to confirm.
+2. Then press:
+Ctrl + X
+• This exits nano and brings you back to the terminal.
+Explanation highlights
+• Uses PreparedStatement to avoid SQL injection.
+• initSchema ensures the users table exists (useful for first run).
+• com.mysql.cj.jdbc.Driver is the MySQL connector class.
+6. Compile & Run (commands)
+# Compile
+javac CrudApp.java
+Replace the YOUR PC USERNAME to your pc id you can find the pc id as shown in the
+below picture
+# Run
+javac -cp .:/home/YOUR PC USER NAME/java-crud/mysql-connector-j-8.0.21/mysqlconnector-j-8.021.jar CrudApp.java
